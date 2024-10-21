@@ -1,61 +1,117 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <script>
-    let globalId = 1;
-    let todoState = [];
-    let oldTodoState = [];
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <script>
+        let globalId = 1;
+        let todoState = [];
 
-    function addTodoToDom() {
-      
-    }
+        function updateState(newTodos) {
+            const oldTodos = [...todoState];
+            todoState = newTodos;
 
-    function removeTodoFromDom(todo) {
-      
-    }
+            const added = newTodos.filter(todo => !oldTodos.some(oldTodo => oldTodo.id === todo.id));
+            const deleted = oldTodos.filter(oldTodo => !newTodos.some(todo => todo.id === oldTodo.id));
+            const updated = newTodos.filter(todo => {
+                const oldTodo = oldTodos.find(oldTodo => oldTodo.id === todo.id);
+                return oldTodo && (oldTodo.title !== todo.title || oldTodo.description !== todo.description);
+            });
 
-    function updateTodoInDom(oldTodo, newTodo) {
-        
-    }
+            added.forEach(addTodoToDom);
+            deleted.forEach(removeTodoFromDom);
+            updated.forEach(todo => updateTodoInDom(todo.id, todo));
 
-    function updateState(newTodos) {
-      // calculate the diff b/w newTodos and oldTodos.
-      // More specifically, find out what todos are - 
-      // 1. added
-      // 2. deleted
-      // 3. updated
-      const added = [];
-      const deleted = [];
-      const updated = [];
-      // calculate these 3 arrays
-      // call addTodo, removeTodo, updateTodo functions on each of the
-      // elements
-      oldTodoState = newTodos;
-    }
+            renderTodos();
+        }
 
-    function addTodo() {
-      const title = document.getElementById("title").value;
-      const description = document.getElementById("description").value;
-      todoState.push({
-        title: title,
-        description: description,
-        id: globalId++,
-      })
-      updateState(todoState);
-    }
-  </script>
+        function addTodo() {
+            const title = document.getElementById("title").value;
+            const description = document.getElementById("description").value;
+            if (title.trim() === "") {
+                alert("Title cannot be empty!");
+                return;
+            }
+            const newTodo = { title, description, id: globalId++ };
+            updateState([...todoState, newTodo]);
+            clearInputs();
+        }
+
+        function addTodoToDom(todo) {
+            const todoList = document.getElementById("todos");
+            const todoElement = document.createElement("div");
+            todoElement.id = `todo-${todo.id}`;
+            todoElement.innerHTML = `
+                <h3 class="title">${todo.title}</h3>
+                <p class="description">${todo.description}</p>
+                <button onclick="editTodo(${todo.id})">Edit</button>
+                <button onclick="removeTodo(${todo.id})">Delete</button>
+            `;
+            todoList.appendChild(todoElement);
+        }
+
+        function removeTodo(id) {
+            updateState(todoState.filter(todo => todo.id !== id));
+        }
+
+        function removeTodoFromDom(todo) {
+            const todoElement = document.getElementById(`todo-${todo.id}`);
+            if (todoElement) {
+                todoElement.remove();
+            }
+        }
+
+        function editTodo(id) {
+            const todo = todoState.find(todo => todo.id === id);
+            if (todo) {
+                document.getElementById("title").value = todo.title;
+                document.getElementById("description").value = todo.description;
+                document.getElementById("updateBtn").style.display = "inline";
+                document.getElementById("addBtn").style.display = "none";
+                document.getElementById("updateBtn").onclick = () => updateTodo(id);
+            }
+        }
+
+        function updateTodo(id) {
+            const title = document.getElementById("title").value;
+            const description = document.getElementById("description").value;
+            if (title.trim() === "") {
+                alert("Title cannot be empty!");
+                return;
+            }
+            updateState(todoState.map(todo => todo.id === id ? { ...todo, title, description } : todo));
+            clearInputs();
+            document.getElementById("updateBtn").style.display = "none";
+            document.getElementById("addBtn").style.display = "inline";
+        }
+
+        function updateTodoInDom(id, todo) {
+            const todoElement = document.getElementById(`todo-${id}`);
+            if (todoElement) {
+                todoElement.querySelector(".title").textContent = todo.title;
+                todoElement.querySelector(".description").textContent = todo.description;
+            }
+        }
+
+        function renderTodos() {
+            const todoList = document.getElementById("todos");
+            todoList.innerHTML = "";
+            todoState.forEach(addTodoToDom);
+        }
+
+        function clearInputs() {
+            document.getElementById("title").value = "";
+            document.getElementById("description").value = "";
+        }
+    </script>
 </head>
-
 <body>
-  <input type="text" id="title" placeholder="Todo title"></input> <br /><br />
-  <input type="text" id="description" placeholder="Todo description"></input> <br /><br />
-  <button onclick="addTodo()">Add todo</button>
-  <br /> <br />
-
-  <div id="todos">
-
-  </div>
+    <h1>Todo App</h1>
+    <input type="text" id="title" placeholder="Todo title" required>
+    <input type="text" id="description" placeholder="Todo description">
+    <button id="addBtn" onclick="addTodo()">Add Todo</button>
+    <button id="updateBtn" style="display: none;">Update Todo</button>
+    <div id="todos"></div>
 </body>
-
 </html>
