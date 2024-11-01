@@ -11,7 +11,46 @@
 */
 
 class Todo {
+  constructor() {
+    this.todos = []
+  }
 
-}
+  add(todo) {
+    this.todos.push(todo);
+    return this.todos.length - 1;
+  }
+
+  remove(indexOfTodo) {
+    if (indexOfTodo >= 0 && indexOfTodo <this.todos.length) {
+      this.todos.splice(indexOfTodo, 1)
+      return true
+    }
+    return false
+  }
+
+  update(index, updatedTodo) {
+    if (index >=0 && index < this.todos.length ) {
+      this.todos[index] = updatedTodo;
+      return true
+    }
+    return false
+  }
+
+  getAll() {
+    return [...this.todos];
+  }
+
+  get(indexOfTodo) {
+    if (indexOfTodo >=0 && indexOfTodo < this.todos.length) {
+      return this.todos[indexOfTodo];
+    }
+    return null
+  }
+
+  clear() {
+    this.todos = []
+  }
+} 
 
 module.exports = Todo;
+ 

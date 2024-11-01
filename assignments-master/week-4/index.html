@@ -4,114 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todo App</title>
-    <script>
-        let globalId = 1;
-        let todoState = [];
-
-        function updateState(newTodos) {
-            const oldTodos = [...todoState];
-            todoState = newTodos;
-
-            const added = newTodos.filter(todo => !oldTodos.some(oldTodo => oldTodo.id === todo.id));
-            const deleted = oldTodos.filter(oldTodo => !newTodos.some(todo => todo.id === oldTodo.id));
-            const updated = newTodos.filter(todo => {
-                const oldTodo = oldTodos.find(oldTodo => oldTodo.id === todo.id);
-                return oldTodo && (oldTodo.title !== todo.title || oldTodo.description !== todo.description);
-            });
-
-            added.forEach(addTodoToDom);
-            deleted.forEach(removeTodoFromDom);
-            updated.forEach(todo => updateTodoInDom(todo.id, todo));
-
-            renderTodos();
-        }
-
-        function addTodo() {
-            const title = document.getElementById("title").value;
-            const description = document.getElementById("description").value;
-            if (title.trim() === "") {
-                alert("Title cannot be empty!");
-                return;
-            }
-            const newTodo = { title, description, id: globalId++ };
-            updateState([...todoState, newTodo]);
-            clearInputs();
-        }
-
-        function addTodoToDom(todo) {
-            const todoList = document.getElementById("todos");
-            const todoElement = document.createElement("div");
-            todoElement.id = `todo-${todo.id}`;
-            todoElement.innerHTML = `
-                <h3 class="title">${todo.title}</h3>
-                <p class="description">${todo.description}</p>
-                <button onclick="editTodo(${todo.id})">Edit</button>
-                <button onclick="removeTodo(${todo.id})">Delete</button>
-            `;
-            todoList.appendChild(todoElement);
-        }
-
-        function removeTodo(id) {
-            updateState(todoState.filter(todo => todo.id !== id));
-        }
-
-        function removeTodoFromDom(todo) {
-            const todoElement = document.getElementById(`todo-${todo.id}`);
-            if (todoElement) {
-                todoElement.remove();
-            }
-        }
-
-        function editTodo(id) {
-            const todo = todoState.find(todo => todo.id === id);
-            if (todo) {
-                document.getElementById("title").value = todo.title;
-                document.getElementById("description").value = todo.description;
-                document.getElementById("updateBtn").style.display = "inline";
-                document.getElementById("addBtn").style.display = "none";
-                document.getElementById("updateBtn").onclick = () => updateTodo(id);
-            }
-        }
-
-        function updateTodo(id) {
-            const title = document.getElementById("title").value;
-            const description = document.getElementById("description").value;
-            if (title.trim() === "") {
-                alert("Title cannot be empty!");
-                return;
-            }
-            updateState(todoState.map(todo => todo.id === id ? { ...todo, title, description } : todo));
-            clearInputs();
-            document.getElementById("updateBtn").style.display = "none";
-            document.getElementById("addBtn").style.display = "inline";
-        }
-
-        function updateTodoInDom(id, todo) {
-            const todoElement = document.getElementById(`todo-${id}`);
-            if (todoElement) {
-                todoElement.querySelector(".title").textContent = todo.title;
-                todoElement.querySelector(".description").textContent = todo.description;
-            }
-        }
-
-        function renderTodos() {
-            const todoList = document.getElementById("todos");
-            todoList.innerHTML = "";
-            todoState.forEach(addTodoToDom);
-        }
-
-        function clearInputs() {
-            document.getElementById("title").value = "";
-            document.getElementById("description").value = "";
-        }
-    </script>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <h1>Todo App</h1>
-    <input type="text" id="title" placeholder="Todo title" required>
-    <input type="text" id="description" placeholder="Todo description">
-    <button id="addBtn" onclick="addTodo()">Add Todo</button>
-    <button id="updateBtn" style="display: none;">Update Todo</button>
-    <div id="todos"></div>
+    <div class="container">
+        <h1>Todo App</h1>
+        <div class="input-container">
+            <input type="text" id="title" placeholder="Todo title" required>
+            <input type="text" id="description" placeholder="Todo description">
+            <button id="addBtn" onclick="addTodo()">Add Todo</button>
+            <button id="updateBtn" style="display: none;">Update Todo</button>
+        </div>
+        <div class="eacc-container">
+            <img src="./wallpaperbetter.com_3840x2160(1).jpg" alt="e/acc" class="eacc-image">
+            <p class="eacc-caption">Embrace e/acc: Accelerate Your Productivity!</p>
+        </div>
+        <div id="todos"></div>
+    </div>
+    <script>
+      let globalId = 1;
+      let todoState = [];
+
+      const animeGifs = [
+        "https://media.giphy.com/media/LmNwrBhejkK9EFP504/giphy.gif",
+        "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGQwYWhlNDNyNTYzOXBvZnBibjZzbW1mOHA3NGE2aHZ3NXZsYzF0NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/q217GUnfKAmJlFcjBX/giphy.gif",
+        "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDYyaWw4eXJrdWJqcGtybHY1YnQ0NnVhZjZibDRic2IzaW1tMjU1YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/eSwGh3YK54JKU/giphy.gif",
+        "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmd1dHlqeHMxMG5vaWV1NmR0MGdxcWF3MzhsdzlvMDB5aDhxYnFhbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/105TPTlFrqaW1G/giphy.gif",
+      ];
+
+      function getRandomGif() {
+        return animeGifs[Math.floor(Math.random() * animeGifs.length)];
+      }
+
+      function updateState(newTodos) {
+        const oldTodos = [...todoState];
+        todoState = newTodos;
+
+        const added = newTodos.filter(
+          (todo) => !oldTodos.some((oldTodo) => oldTodo.id === todo.id)
+        );
+        const deleted = oldTodos.filter(
+          (oldTodo) => !newTodos.some((todo) => todo.id === oldTodo.id)
+        );
+        const updated = newTodos.filter((todo) => {
+          const oldTodo = oldTodos.find((oldTodo) => oldTodo.id === todo.id);
+          return (
+            oldTodo &&
+            (oldTodo.title !== todo.title ||
+              oldTodo.description !== todo.description)
+          );
+        });
+
+        added.forEach(addTodoToDom);
+        deleted.forEach(removeTodoFromDom);
+        updated.forEach((todo) => updateTodoInDom(todo.id, todo));
+
+        renderTodos();
+      }
+
+      function addTodo() {
+        const title = document.getElementById("title").value;
+        const description = document.getElementById("description").value;
+        if (title.trim() === "") {
+          alert("Title cannot be empty!");
+          return;
+        }
+        const newTodo = {
+          title,
+          description,
+          id: globalId++,
+          gif: getRandomGif(),
+        };
+        updateState([...todoState, newTodo]);
+        clearInputs();
+      }
+
+      function addTodoToDom(todo) {
+        const todoList = document.getElementById("todos");
+        const todoElement = document.createElement("div");
+        todoElement.id = `todo-${todo.id}`;
+        todoElement.className = "todo-item";
+        todoElement.innerHTML = `
+        <img src="${todo.gif}" alt="Anime GIF" class="todo-gif">
+        <div class="todo-content">
+            <h3 class="todo-title">${todo.title}</h3>
+            <p class="todo-description">${todo.description}</p>
+        </div>
+        <div class="todo-actions">
+            <button onclick="editTodo(${todo.id})">Edit</button>
+            <button onclick="removeTodo(${todo.id})">Delete</button>
+        </div>
+    `;
+        todoList.appendChild(todoElement);
+      }
+
+      function removeTodo(id) {
+        updateState(todoState.filter((todo) => todo.id !== id));
+      }
+
+      function removeTodoFromDom(todo) {
+        const todoElement = document.getElementById(`todo-${todo.id}`);
+        if (todoElement) {
+          todoElement.remove();
+        }
+      }
+
+      function editTodo(id) {
+        const todo = todoState.find((todo) => todo.id === id);
+        if (todo) {
+          document.getElementById("title").value = todo.title;
+          document.getElementById("description").value = todo.description;
+          document.getElementById("updateBtn").style.display = "inline";
+          document.getElementById("addBtn").style.display = "none";
+          document.getElementById("updateBtn").onclick = () => updateTodo(id);
+        }
+      }
+
+      function updateTodo(id) {
+        const title = document.getElementById("title").value;
+        const description = document.getElementById("description").value;
+        if (title.trim() === "") {
+          alert("Title cannot be empty!");
+          return;
+        }
+        updateState(
+          todoState.map((todo) =>
+            todo.id === id ? { ...todo, title, description } : todo
+          )
+        );
+        clearInputs();
+        document.getElementById("updateBtn").style.display = "none";
+        document.getElementById("addBtn").style.display = "inline";
+      }
+
+      function updateTodoInDom(id, todo) {
+        const todoElement = document.getElementById(`todo-${id}`);
+        if (todoElement) {
+          todoElement.querySelector(".title").textContent = todo.title;
+          todoElement.querySelector(".description").textContent =
+            todo.description;
+        }
+      }
+
+      function renderTodos() {
+        const todoList = document.getElementById("todos");
+        todoList.innerHTML = "";
+        todoState.forEach(addTodoToDom);
+      }
+
+      function clearInputs() {
+        document.getElementById("title").value = "";
+        document.getElementById("description").value = "";
+      }
+    </script>
 </body>
 </html>
